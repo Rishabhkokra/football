@@ -31,22 +31,28 @@ public class FootballServiceInfoImpl implements FootballService {
 	public ResponseEntity<?> getInfo(HttpServletRequest request) throws Exception {
 		LOG.info("Request Received with params: {}", request.getParameterMap());
 		try {
+			if (request.getParameterMap().isEmpty()) {
+				LOG.error("Bad request received ... ");
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			}
+
 			MultiValueMap<String, String> linkedMultiValueMap = new LinkedMultiValueMap<>();
 			for (Map.Entry<String, String[]> m : request.getParameterMap().entrySet())
 				linkedMultiValueMap.add(m.getKey(), m.getValue()[0]);
 			linkedMultiValueMap.add("APIkey", accessKey);
 			UriComponents uri = UriComponentsBuilder.newInstance().host(baseUrl).scheme("https")
 					.queryParams(linkedMultiValueMap).build();
-			
-			LOG.info("Connecting to the host: {} ....",baseUrl);
-			
-			ResponseEntity<String> response = this.restCleint.getForEntity(uri.toUriString(), String.class,
-					new Object[0]);
+
+			LOG.info("Connecting to the host: {} ....", baseUrl);
+
+			ResponseEntity<String> response = restCleint.getForEntity(uri.toUriString(), String.class);
 			LOG.info("Request Status: [{}]", response.getStatusCodeValue());
-			
+			if (response.getStatusCodeValue() != 200)
+				throw new Exception("Source responded with status "+response.getStatusCodeValue());
+
 			return new ResponseEntity<String>(response.getBody(), HttpStatus.OK);
 		} catch (Exception e) {
-			LOG.error("FAILED TO SERVE REQUEST DUE TO: ", e);
+			LOG.error("FAILED TO SERVE REQUEST DUE TO: ", e.getMessage());
 			return new ResponseEntity<String>("FAILURE HAPPENED :( !", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
