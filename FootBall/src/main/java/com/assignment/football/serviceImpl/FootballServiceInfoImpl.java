@@ -33,7 +33,7 @@ public class FootballServiceInfoImpl implements FootballService {
 		try {
 			if (request.getParameterMap().isEmpty()) {
 				LOG.error("Bad request received ... ");
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>("BAD REQUEST!",HttpStatus.BAD_REQUEST);
 			}
 
 			MultiValueMap<String, String> linkedMultiValueMap = new LinkedMultiValueMap<>();
